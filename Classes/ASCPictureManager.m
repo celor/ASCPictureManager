@@ -84,12 +84,13 @@
 		if (![_requestURLBlocks containsObject:urlValue]) {
 			[_requestURLBlocks addObject:urlValue];
 			NSURL *url = [NSURL URLWithString:urlValue];
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 			    if (url) {
 			        [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
 			        NSData *imageData = [NSData dataWithContentsOfURL:url];
 			        UIImage *img = [UIImage imageWithData:imageData];
 			        img = [UIImage imageWithCGImage:img.CGImage scale:[UIScreen mainScreen].scale orientation:img.imageOrientation];
+                    
 			        [[ASCImageCache sharedCache] cacheImage:img forURLString:urlValue];
 			        [_requestURLBlocks removeObject:urlValue];
 			        NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlValue];
@@ -199,7 +200,12 @@
 }
 
 static inline NSString *ImageSavePathFromKey(NSString *key) {
+    
+#if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000) || (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 1090)
 	return [[NSString alloc] initWithFormat:@"%@/images/%@", [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject], [[[key dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0] stringByReplacingOccurrencesOfString:@"/" withString:@"_"]];
+#else
+	return [[NSString alloc] initWithFormat:@"%@/images/%@", [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject], [[[key dataUsingEncoding:NSUTF8StringEncoding] base64Encoded] stringByReplacingOccurrencesOfString:@"/" withString:@"_"]];
+#endif
 }
 
 - (id)savedObjectForKey:(id)key {
