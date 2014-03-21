@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-typedef void (^ASCImageSuccessBlock)(UIImage *image);
+typedef void (^ASCImageSuccessBlock)(UIImage *image, NSString *urlString);
 @interface ASCPictureManager : NSObject
 
 @property (nonatomic,strong) NSString *entityName;

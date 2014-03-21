@@ -96,7 +96,7 @@
 			        if (callbacks) {
 			            [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
 			                dispatch_async(dispatch_get_main_queue(), ^{
-			                    imageBlock(img);
+			                    imageBlock(img,urlValue);
 							});
 						}];
 					}
@@ -131,7 +131,7 @@
 		UIImage *image = [[ASCImageCache sharedCache] cachedImageForURLString:urlValue];
 		if (image) {
 			if (successBlock) {
-				successBlock(image);
+				successBlock(image,urlValue);
 			}
 		}
 		else {
@@ -193,7 +193,7 @@
 - (id)objectForKey:(id)key {
 	UIImage *object = [super objectForKey:key];
 	if (!object) {
-		[self savedObjectForKey:key];
+		object = [self savedObjectForKey:key];
 	}
 	return object;
 }

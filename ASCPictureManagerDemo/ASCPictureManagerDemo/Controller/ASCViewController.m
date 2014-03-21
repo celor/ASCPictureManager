@@ -69,8 +69,11 @@
     ASCPictureCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
     Picture *picure =[_pictures objectAtIndex:indexPath.row];
     [cell.legendLabel setText:picure.title];
-    [picure observeDownloadWithBlock:^(UIImage *image) {
-        [cell.imageView setImage:image];
+    cell.imageUrl = picure.pictureUrl;
+    [picure observeDownloadWithBlock:^(UIImage *image,NSString *url) {
+        if ([cell.imageUrl isEqualToString:url]) {
+            [cell.imageView setImage:image];
+        }
     }];
     
     return cell;

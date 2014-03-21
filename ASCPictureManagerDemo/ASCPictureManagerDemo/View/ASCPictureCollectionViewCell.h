@@ -11,5 +11,5 @@
 @interface ASCPictureCollectionViewCell : UICollectionViewCell
 @property (strong, nonatomic) IBOutlet UIImageView *imageView;
 @property (strong, nonatomic) IBOutlet UILabel *legendLabel;
-
+@property (strong, nonatomic) NSString *imageUrl;
 @end

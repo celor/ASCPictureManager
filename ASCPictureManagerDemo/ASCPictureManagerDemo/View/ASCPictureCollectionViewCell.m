@@ -10,22 +10,13 @@
 
 @implementation ASCPictureCollectionViewCell
 
-- (id)initWithFrame:(CGRect)frame
+-(void)awakeFromNib
 {
-    self = [super initWithFrame:frame];
-    if (self) {
-        // Initialization code
-    }
-    return self;
+    self.contentView.layer.borderColor = [UIColor whiteColor].CGColor;
+    self.contentView.layer.borderWidth = 1;
 }
-
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
+-(void)prepareForReuse
 {
-    // Drawing code
+    self.imageView.image = nil;
 }
-*/
-
 @end
