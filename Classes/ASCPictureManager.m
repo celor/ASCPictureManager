@@ -62,6 +62,7 @@
 
 	_fetchedController = ({
 	                          NSFetchRequest *request = [[NSFetchRequest alloc] initWithEntityName:_entityName];
+	                          [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:_urlKeyValue ascending:NO]]];
 	                          NSFetchedResultsController *resultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:_managedObjectContext sectionNameKeyPath:nil cacheName:nil];
 	                          [resultController setDelegate:self];
 	                          [resultController performFetch:nil];

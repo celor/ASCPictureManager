@@ -29,6 +29,9 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    [[ASCPictureManager sharedManager] setManagedObjectContext:[ASCApp managedObjectContext]];
+    [[ASCPictureManager sharedManager] setEntityName:@"Picture"];
+    [[ASCPictureManager sharedManager] setUrlKeyValue:@"pictureUrl"];
 }
 
 - (void)didReceiveMemoryWarning
@@ -39,13 +42,20 @@
 
 - (IBAction)download:(id)sender {
     NSArray *pictures = @[@"Tiger",@"Leopard",@"Snow Leopard",@"Lion",@"Mountain Lion",@"Maverick"];
+    _pictures = [NSMutableArray new];
     [pictures enumerateObjectsUsingBlock:^(NSString *title, NSUInteger idx, BOOL *stop) {
         Picture *picture = [NSEntityDescription insertNewObjectForEntityForName:@"Picture" inManagedObjectContext:[ASCApp managedObjectContext]];
         [picture setTitle:title];
-        [picture setPictureUrl:[NSString stringWithFormat:@""]];
+        [picture setPictureUrl:[NSString stringWithFormat:@"https://raw.githubusercontent.com/celor/ASCPictureManager/master/Images/%@.jpg",[title stringByReplacingOccurrencesOfString:@" " withString:@""]]];
+        [_pictures addObject:picture];
     }];
     
+    [_collectionView reloadData];
     [ASCApp saveContext];
+    [UIView animateWithDuration:.3 animations:^{
+        _downloadButtonHeight.constant = 0;
+        [self.view layoutIfNeeded];
+    }];
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
@@ -59,6 +69,9 @@
     ASCPictureCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
     Picture *picure =[_pictures objectAtIndex:indexPath.row];
     [cell.legendLabel setText:picure.title];
+    [picure observeDownloadWithBlock:^(UIImage *image) {
+        [cell.imageView setImage:image];
+    }];
     
     return cell;
 }

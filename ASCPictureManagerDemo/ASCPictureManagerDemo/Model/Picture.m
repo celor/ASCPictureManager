@@ -11,8 +11,7 @@
 
 @implementation Picture
 
-@dynamic rank;
-@dynamic title;
 @dynamic pictureUrl;
+@dynamic title;
 
 @end

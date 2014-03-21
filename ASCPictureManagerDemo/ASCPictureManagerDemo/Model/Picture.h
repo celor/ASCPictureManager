@@ -12,8 +12,7 @@
 
 @interface Picture : NSManagedObject
 
-@property (nonatomic, retain) NSNumber * rank;
-@property (nonatomic, retain) NSString * title;
 @property (nonatomic, retain) NSString * pictureUrl;
+@property (nonatomic, retain) NSString * title;
 
 @end

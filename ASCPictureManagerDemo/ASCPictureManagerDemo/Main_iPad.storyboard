@@ -17,6 +17,20 @@
                         <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
+                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="09t-sk-g86">
+                                <rect key="frame" x="300" y="0.0" width="168" height="50"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="aIx-Pr-b5n"/>
+                                </constraints>
+                                <state key="normal" title="Download">
+                                    <color key="titleColor" red="0.0" green="0.42697878649999998" blue="0.58910241789999995" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="download:" destination="5o9-an-dnv" eventType="touchUpInside" id="uE9-bW-zTD"/>
+                                </connections>
+                            </button>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="wPg-uy-93q">
                                 <rect key="frame" x="0.0" y="50" width="768" height="974"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -60,19 +74,6 @@
                                     <outlet property="dataSource" destination="5o9-an-dnv" id="VOA-Ti-lb8"/>
                                 </connections>
                             </collectionView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="09t-sk-g86">
-                                <rect key="frame" x="350" y="0.0" width="69" height="50"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="aIx-Pr-b5n"/>
-                                </constraints>
-                                <state key="normal" title="Download">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="download:" destination="5o9-an-dnv" eventType="touchUpInside" id="uE9-bW-zTD"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
@@ -80,8 +81,8 @@
                             <constraint firstItem="wPg-uy-93q" firstAttribute="top" secondItem="09t-sk-g86" secondAttribute="bottom" id="1my-zq-tTg"/>
                             <constraint firstAttribute="trailing" secondItem="wPg-uy-93q" secondAttribute="trailing" id="KL7-3d-ayl"/>
                             <constraint firstItem="09t-sk-g86" firstAttribute="top" secondItem="BKe-HV-gHQ" secondAttribute="top" id="VAr-Vb-c5D"/>
-                            <constraint firstItem="09t-sk-g86" firstAttribute="leading" secondItem="BKe-HV-gHQ" secondAttribute="leading" constant="350" id="anA-bW-fAU"/>
-                            <constraint firstAttribute="trailing" secondItem="09t-sk-g86" secondAttribute="trailing" constant="349" id="cbt-zr-h1a"/>
+                            <constraint firstItem="09t-sk-g86" firstAttribute="leading" secondItem="BKe-HV-gHQ" secondAttribute="leading" constant="300" id="anA-bW-fAU"/>
+                            <constraint firstAttribute="trailing" secondItem="09t-sk-g86" secondAttribute="trailing" constant="300" id="cbt-zr-h1a"/>
                             <constraint firstItem="wPg-uy-93q" firstAttribute="leading" secondItem="BKe-HV-gHQ" secondAttribute="leading" id="peE-LL-jaD"/>
                             <constraint firstItem="wPg-uy-93q" firstAttribute="top" secondItem="09t-sk-g86" secondAttribute="bottom" id="ueZ-i5-9K0"/>
                         </constraints>
