@@ -1,0 +1,4 @@
+ASCPictureManager
+=================
+
+NSManagedObject Picture Manager
