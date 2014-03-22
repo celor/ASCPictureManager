@@ -24,7 +24,6 @@
 //
 
 #import "ASCPictureManager.h"
-#import <CoreData/CoreData.h>
 
 @interface ASCImageCache : NSCache
 + (ASCImageCache *)sharedCache;
