@@ -24,7 +24,6 @@
 //
 
 #import "UIImageView+ASCPictureManager.h"
-#import "ASCPictureManager.h"
 #import <objc/runtime.h>
 @implementation UIImageView (ASCPictureManager)
 
