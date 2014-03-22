@@ -9,4 +9,7 @@ Pod::Spec.new do |s|
   s.platform = :ios, '6.0'
   s.requires_arc = true
   s.source_files = 'Classes/ASCPictureManager.{h,m}'
+    s.subspec 'UIKitCategory' do |ds|
+    ds.source_files = 'Classes/*+ASCPictureManager.{h,m}'
+  end
 end
