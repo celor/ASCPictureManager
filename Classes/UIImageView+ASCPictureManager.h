@@ -24,6 +24,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ASCPictureManager.h"
 
 @interface UIImageView (ASCPictureManager)
 -(void)setPicture:(NSManagedObject *)picture;
