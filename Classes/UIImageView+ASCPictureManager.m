@@ -1,5 +1,5 @@
 //
-//  ASCPictureManager.h
+//  UIImageView+ASCPictureManager.m
 //
 //  Created by Aurélien Scelles on 15/03/2014.
 //  Copyright (c) 2014 celor
@@ -23,19 +23,32 @@
 //  SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
-typedef void (^ASCImageSuccessBlock)(UIImage *image, NSString *urlString);
-@interface ASCPictureManager : NSObject
+#import "UIImageView+ASCPictureManager.h"
+#import "ASCPictureManager.h"
+#import <objc/runtime.h>
+@implementation UIImageView (ASCPictureManager)
 
-@property (nonatomic,strong) NSString *entityName;
-@property (nonatomic,strong) NSString *urlKeyValue;
-@property (nonatomic,strong) NSManagedObjectContext *managedObjectContext;
+-(NSString *)imageUrl {
+    return (NSString *)objc_getAssociatedObject(self, @selector(imageUrl));
+}
 
-+ (instancetype)sharedManager;
-
-@end
-
-@interface NSManagedObject (ASCPictureManager)
-- (void)observeDownloadWithBlock:(ASCImageSuccessBlock)successBlock;
-
+-(void)setImageUrl:(NSString *)imgUrl{
+    objc_setAssociatedObject(self, @selector(imageUrl), imgUrl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(void)setPicture:(NSManagedObject *)picture
+{
+    if ([[ASCPictureManager sharedManager] entityName]
+	    && [[ASCPictureManager sharedManager] urlKeyValue]
+	    && [picture.entity.name isEqualToString:[[ASCPictureManager sharedManager] entityName]]
+	    && [picture.entity.attributesByName objectForKey:[[ASCPictureManager sharedManager] urlKeyValue]])
+    {
+        [self setImageUrl:[picture valueForKey:[[ASCPictureManager sharedManager] urlKeyValue]]];
+        __weak typeof(self) weakSelf = self;
+        [picture observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
+            if ([[weakSelf imageUrl] isEqualToString:urlString]) {
+                [weakSelf setImage:image];
+            }
+        }];
+    }
+}
 @end

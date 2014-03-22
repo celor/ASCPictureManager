@@ -25,6 +25,7 @@
 		F65D35C118DCED0900B417F9 /* ASCPictureCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = F65D35C018DCED0900B417F9 /* ASCPictureCollectionViewCell.m */; };
 		F65D35C418DCF6D700B417F9 /* ASCPictureManagerDemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F65D35C218DCF6D700B417F9 /* ASCPictureManagerDemo.xcdatamodeld */; };
 		F65D35C718DCF6EB00B417F9 /* Picture.m in Sources */ = {isa = PBXBuildFile; fileRef = F65D35C618DCF6EB00B417F9 /* Picture.m */; };
+		F65D35D318DDA91900B417F9 /* UIImageView+ASCPictureManager.m in Sources */ = {isa = PBXBuildFile; fileRef = F65D35D218DDA91800B417F9 /* UIImageView+ASCPictureManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,8 @@
 		F65D35C318DCF6D700B417F9 /* ASCPictureManagerDemo.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ASCPictureManagerDemo.xcdatamodel; sourceTree = "<group>"; };
 		F65D35C518DCF6EB00B417F9 /* Picture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Picture.h; sourceTree = "<group>"; };
 		F65D35C618DCF6EB00B417F9 /* Picture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Picture.m; sourceTree = "<group>"; };
+		F65D35D118DDA91800B417F9 /* UIImageView+ASCPictureManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+ASCPictureManager.h"; sourceTree = "<group>"; };
+		F65D35D218DDA91800B417F9 /* UIImageView+ASCPictureManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+ASCPictureManager.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +155,8 @@
 			children = (
 				F65D35AD18DCEAAD00B417F9 /* ASCPictureManager.h */,
 				F65D35AE18DCEAAD00B417F9 /* ASCPictureManager.m */,
+				F65D35D118DDA91800B417F9 /* UIImageView+ASCPictureManager.h */,
+				F65D35D218DDA91800B417F9 /* UIImageView+ASCPictureManager.m */,
 			);
 			name = Classes;
 			path = ../../Classes;
@@ -288,6 +293,7 @@
 				F65D35C118DCED0900B417F9 /* ASCPictureCollectionViewCell.m in Sources */,
 				F65D35AF18DCEAAD00B417F9 /* ASCPictureManager.m in Sources */,
 				F65D358118DCE8F800B417F9 /* main.m in Sources */,
+				F65D35D318DDA91900B417F9 /* UIImageView+ASCPictureManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -479,6 +485,7 @@
 				F65D35A318DCE8F800B417F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F65D35A418DCE8F800B417F9 /* Build configuration list for PBXNativeTarget "ASCPictureManagerDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -487,6 +494,7 @@
 				F65D35A618DCE8F800B417F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

@@ -1,5 +1,5 @@
 //
-//  ASCPictureManager.h
+//  UIImageView+ASCPictureManager.h
 //
 //  Created by Aurélien Scelles on 15/03/2014.
 //  Copyright (c) 2014 celor
@@ -23,19 +23,8 @@
 //  SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
-typedef void (^ASCImageSuccessBlock)(UIImage *image, NSString *urlString);
-@interface ASCPictureManager : NSObject
+#import <UIKit/UIKit.h>
 
-@property (nonatomic,strong) NSString *entityName;
-@property (nonatomic,strong) NSString *urlKeyValue;
-@property (nonatomic,strong) NSManagedObjectContext *managedObjectContext;
-
-+ (instancetype)sharedManager;
-
-@end
-
-@interface NSManagedObject (ASCPictureManager)
-- (void)observeDownloadWithBlock:(ASCImageSuccessBlock)successBlock;
-
+@interface UIImageView (ASCPictureManager)
+-(void)setPicture:(NSManagedObject *)picture;
 @end

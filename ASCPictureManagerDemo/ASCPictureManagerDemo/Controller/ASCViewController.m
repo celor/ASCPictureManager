@@ -9,6 +9,7 @@
 #import "ASCViewController.h"
 #import "ASCPictureCollectionViewCell.h"
 #import "ASCPictureManager.h"
+#import "UIImageView+ASCPictureManager.h"
 #import "ASCAppDelegate.h"
 #define ASCApp (ASCAppDelegate *)[UIApplication sharedApplication].delegate
 
@@ -67,14 +68,9 @@
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     ASCPictureCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
-    Picture *picure =[_pictures objectAtIndex:indexPath.row];
-    [cell.legendLabel setText:picure.title];
-    cell.imageUrl = picure.pictureUrl;
-    [picure observeDownloadWithBlock:^(UIImage *image,NSString *url) {
-        if ([cell.imageUrl isEqualToString:url]) {
-            [cell.imageView setImage:image];
-        }
-    }];
+    Picture *picture =[_pictures objectAtIndex:indexPath.row];
+    [cell.legendLabel setText:picture.title];
+    [cell.imageView setPicture:picture];
     
     return cell;
 }

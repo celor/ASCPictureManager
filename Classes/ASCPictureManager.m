@@ -1,6 +1,5 @@
 //
 //  ASCPictureManager.m
-//  Portfolio
 //
 //  Created by Aurélien Scelles on 15/03/2014.
 //  Copyright (c) 2014 celor
@@ -132,7 +131,9 @@
 		UIImage *image = [[ASCImageCache sharedCache] cachedImageForURLString:urlValue];
 		if (image) {
 			if (successBlock) {
-				successBlock(image,urlValue);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    successBlock(image,urlValue);
+                });
 			}
 		}
 		else {
