@@ -36,7 +36,8 @@
 }
 -(void)setPicture:(NSManagedObject *)picture
 {
-    if ([[ASCPictureManager sharedManager] entityName]
+    if (picture
+        && [[ASCPictureManager sharedManager] entityName]
 	    && [[ASCPictureManager sharedManager] urlKeyValue]
 	    && [picture.entity.name isEqualToString:[[ASCPictureManager sharedManager] entityName]]
 	    && [picture.entity.attributesByName objectForKey:[[ASCPictureManager sharedManager] urlKeyValue]])
@@ -53,13 +54,16 @@
 
 -(void)setPictureWithUrl:(NSString *)pictureUrl
 {
-    [self setImageUrl:pictureUrl];
-    __weak typeof(self) weakSelf = self;
-    [pictureUrl observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
-        if ([[weakSelf imageUrl] isEqualToString:urlString]) {
-            [weakSelf setImage:image];
-        }
-    }];
+    if (pictureUrl) {
+        
+        [self setImageUrl:pictureUrl];
+        __weak typeof(self) weakSelf = self;
+        [pictureUrl observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
+            if ([[weakSelf imageUrl] isEqualToString:urlString]) {
+                [weakSelf setImage:image];
+            }
+        }];
+    }
     
 }
 @end
