@@ -40,8 +40,50 @@
 }
 
 @end
-@implementation ASCPictureManager
+@interface ASCPictureManagerStack : NSObject
+{
+    NSMutableDictionary *_pictureManagers;
+}
 
+@end
+
+@implementation ASCPictureManagerStack
+
+
++ (ASCPictureManagerStack *)sharedManager {
+	static ASCPictureManagerStack *instance = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+	    instance = [self new];
+	});
+    
+	return instance;
+}
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _pictureManagers = [NSMutableDictionary new];
+    }
+    return self;
+}
+
+-(ASCPictureManager *)pictureManagerForEntityName:(NSString *)entityName
+{
+    ASCPictureManager * manager = [_pictureManagers objectForKey:entityName];
+    if (!manager) {
+        manager = [ASCPictureManager new];
+        [manager setEntityName:entityName];
+    }
+    return manager;
+}
+-(void)addManager:(ASCPictureManager *)manager forEntityName:(NSString *)entityName
+{
+    [_pictureManagers setObject:manager forKey:entityName];
+}
+@end
+
+@implementation ASCPictureManager
 
 + (ASCPictureManager *)sharedManager {
 	static ASCPictureManager *instance = nil;
@@ -49,8 +91,13 @@
 	dispatch_once(&onceToken, ^{
 	    instance = [self new];
 	});
-
+    
 	return instance;
+}
+
++ (ASCPictureManager *)sharedManagerForEntityName:(NSString *)entityName {
+
+	return [[ASCPictureManagerStack sharedManager] pictureManagerForEntityName:entityName];
 }
 
 - (void)initialize {
@@ -79,35 +126,41 @@
 	    && [[anObject entity].name isEqualToString:_entityName]
 	    && [[anObject entity].attributesByName objectForKey:_urlKeyValue]) {
 		NSString *urlValue = [anObject valueForKey:_urlKeyValue];
-		if (![_requestURLBlocks containsObject:urlValue]) {
-			[_requestURLBlocks addObject:urlValue];
-			NSURL *url = [NSURL URLWithString:urlValue];
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-			    if (url) {
-			        [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
-			        NSData *imageData = [NSData dataWithContentsOfURL:url];
-			        UIImage *img = [UIImage imageWithData:imageData];
-			        img = [UIImage imageWithCGImage:img.CGImage scale:[UIScreen mainScreen].scale orientation:img.imageOrientation];
-                    
-			        [[ASCImageCache sharedCache] cacheImage:img forURLString:urlValue];
-			        [_requestURLBlocks removeObject:urlValue];
-			        NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlValue];
-			        if (callbacks) {
-			            [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
-			                dispatch_async(dispatch_get_main_queue(), ^{
-			                    imageBlock(img,urlValue);
-							});
-						}];
-					}
-				}
-			    [_callbackBlocks removeObjectForKey:urlValue];
-			});
-		}
+		[self downloadImageWithURLString:urlValue];
 	}
+}
+
+-(void)downloadImageWithURLString:(NSString *)urlString
+{
+    if (![_requestURLBlocks containsObject:urlString]) {
+        [_requestURLBlocks addObject:urlString];
+        NSURL *url = [NSURL URLWithString:urlString];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+            if (url) {
+                [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
+                NSData *imageData = [NSData dataWithContentsOfURL:url];
+                UIImage *img = [UIImage imageWithData:imageData];
+                img = [UIImage imageWithCGImage:img.CGImage scale:[UIScreen mainScreen].scale orientation:img.imageOrientation];
+                
+                [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];
+                [_requestURLBlocks removeObject:urlString];
+                NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
+                if (callbacks) {
+                    [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            imageBlock(img,urlString);
+                        });
+                    }];
+                }
+            }
+            [_callbackBlocks removeObjectForKey:urlString];
+        });
+    }
 }
 
 - (void)setEntityName:(NSString *)entityName {
 	_entityName = entityName;
+    [[ASCPictureManagerStack sharedManager] addManager:self forEntityName:entityName];
 	[self initialize];
 }
 
@@ -121,31 +174,35 @@
 	[self initialize];
 }
 
+- (void)observeDownloadForPictureUrl:(NSString *)pictureUrl withBlock:(ASCImageSuccessBlock)successBlock {
+    UIImage *image = [[ASCImageCache sharedCache] cachedImageForURLString:pictureUrl];
+    if (image) {
+        if (successBlock) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                successBlock(image,pictureUrl);
+            });
+        }
+    }
+    else {
+        if (!_callbackBlocks) {
+            _callbackBlocks = [NSMutableDictionary new];
+        }
+        NSMutableArray *callbacks = [_callbackBlocks objectForKey:pictureUrl];
+        if (!callbacks) {
+            callbacks = [NSMutableArray new];
+        }
+        [callbacks addObject:successBlock];
+        [_callbackBlocks setObject:callbacks forKey:pictureUrl];
+    }
+}
+
 - (void)observeDownloadForPicture:(NSManagedObject *)picture withBlock:(ASCImageSuccessBlock)successBlock {
 	if (_entityName
 	    && _urlKeyValue
 	    && [picture.entity.name isEqualToString:_entityName]
 	    && [picture.entity.attributesByName objectForKey:_urlKeyValue]) {
 		NSString *urlValue = [picture valueForKey:_urlKeyValue];
-		UIImage *image = [[ASCImageCache sharedCache] cachedImageForURLString:urlValue];
-		if (image) {
-			if (successBlock) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    successBlock(image,urlValue);
-                });
-			}
-		}
-		else {
-			if (!_callbackBlocks) {
-				_callbackBlocks = [NSMutableDictionary new];
-			}
-			NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlValue];
-			if (!callbacks) {
-				callbacks = [NSMutableArray new];
-			}
-			[callbacks addObject:successBlock];
-			[_callbackBlocks setObject:callbacks forKey:urlValue];
-		}
+		[self observeDownloadForPictureUrl:urlValue withBlock:successBlock];
 	}
 }
 
@@ -155,7 +212,18 @@
 @implementation NSManagedObject (ASCPictureManager)
 
 - (void)observeDownloadWithBlock:(ASCImageSuccessBlock)successBlock {
-	[[ASCPictureManager sharedManager] observeDownloadForPicture:self withBlock:successBlock];
+	[[ASCPictureManager sharedManagerForEntityName:self.entity.name] observeDownloadForPicture:self withBlock:successBlock];
+}
+
+@end
+
+#pragma mark -
+
+
+@implementation NSString (ASCPictureManager)
+
+- (void)observeDownloadWithBlock:(ASCImageSuccessBlock)successBlock {
+	[[ASCPictureManager sharedManager] observeDownloadForPictureUrl:self withBlock:successBlock];
 }
 
 @end

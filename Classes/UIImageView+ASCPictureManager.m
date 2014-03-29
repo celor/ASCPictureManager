@@ -50,4 +50,16 @@
         }];
     }
 }
+
+-(void)setPictureWithUrl:(NSString *)pictureUrl
+{
+    [self setImageUrl:pictureUrl];
+    __weak typeof(self) weakSelf = self;
+    [pictureUrl observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
+        if ([[weakSelf imageUrl] isEqualToString:urlString]) {
+            [weakSelf setImage:image];
+        }
+    }];
+    
+}
 @end

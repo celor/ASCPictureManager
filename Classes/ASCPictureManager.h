@@ -33,10 +33,15 @@ typedef void (^ASCImageSuccessBlock)(UIImage *image, NSString *urlString);
 @property (nonatomic,strong) NSManagedObjectContext *managedObjectContext;
 
 + (instancetype)sharedManager;
+-(ASCPictureManager *)pictureManagerForEntityName:(NSString *)entityName;
+-(void)downloadImageWithURLString:(NSString *)urlString;
 
 @end
 
 @interface NSManagedObject (ASCPictureManager)
 - (void)observeDownloadWithBlock:(ASCImageSuccessBlock)successBlock;
+@end
 
+@interface NSString (ASCPictureManager)
+- (void)observeDownloadWithBlock:(ASCImageSuccessBlock)successBlock;
 @end
