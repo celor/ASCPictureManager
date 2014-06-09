@@ -147,9 +147,16 @@
                 NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
                 if (callbacks) {
                     [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
+                        dispatch_block_t block = ^{
                             imageBlock(img,urlString);
-                        });
+                        };
+                        if ([NSThread isMainThread]) {
+                            block();
+                        }
+                        else {
+                            
+                            dispatch_async(dispatch_get_main_queue(), block);
+                        }
                     }];
                 }
             }
@@ -178,9 +185,16 @@
     UIImage *image = [[ASCImageCache sharedCache] cachedImageForURLString:pictureUrl];
     if (image) {
         if (successBlock) {
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_block_t block = ^{
                 successBlock(image,pictureUrl);
-            });
+            };
+            if ([NSThread isMainThread]) {
+                block();
+            }
+            else {
+                
+                dispatch_async(dispatch_get_main_queue(), block);
+            }
         }
     }
     else {
