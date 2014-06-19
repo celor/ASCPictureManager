@@ -199,7 +199,6 @@
     }
     else if(successBlock) {
         if (!_callbackBlocks) {
-            [self downloadImageWithURLString:pictureUrl];
             _callbackBlocks = [NSMutableDictionary new];
         }
         NSMutableArray *callbacks = [_callbackBlocks objectForKey:pictureUrl];
@@ -209,6 +208,7 @@
         [callbacks addObject:successBlock];
         [_callbackBlocks setObject:callbacks forKey:pictureUrl];
     }
+    [self downloadImageWithURLString:pictureUrl];
 }
 
 - (void)observeDownloadForPicture:(NSManagedObject *)picture withBlock:(ASCImageSuccessBlock)successBlock {

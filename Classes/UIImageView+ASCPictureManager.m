@@ -34,6 +34,7 @@
 -(void)setImageUrl:(NSString *)imgUrl{
     objc_setAssociatedObject(self, @selector(imageUrl), imgUrl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
+
 -(void)setPicture:(NSManagedObject *)picture
 {
     if (picture
@@ -65,5 +66,11 @@
         }];
     }
     
+}
+
+-(void)flushPicture
+{
+    self.image = nil;
+    objc_removeAssociatedObjects(self);
 }
 @end
