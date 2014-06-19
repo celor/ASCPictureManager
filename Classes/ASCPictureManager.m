@@ -217,7 +217,9 @@
 	    && [picture.entity.name isEqualToString:_entityName]
 	    && [picture.entity.attributesByName objectForKey:_urlKeyValue]) {
 		NSString *urlValue = [picture valueForKey:_urlKeyValue];
-		[self observeDownloadForPictureUrl:urlValue withBlock:successBlock];
+        if (urlValue) {
+            [self observeDownloadForPictureUrl:urlValue withBlock:successBlock];
+        }
 	}
 }
 
