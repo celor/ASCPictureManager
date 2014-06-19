@@ -199,6 +199,7 @@
     }
     else if(successBlock) {
         if (!_callbackBlocks) {
+            [self downloadImageWithURLString:pictureUrl];
             _callbackBlocks = [NSMutableDictionary new];
         }
         NSMutableArray *callbacks = [_callbackBlocks objectForKey:pictureUrl];
