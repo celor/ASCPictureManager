@@ -132,7 +132,7 @@
 
 -(void)downloadImageWithURLString:(NSString *)urlString
 {
-    if (![_requestURLBlocks containsObject:urlString]) {
+    if (urlString && ![_requestURLBlocks containsObject:urlString]) {
         [_requestURLBlocks addObject:urlString];
         NSURL *url = [NSURL URLWithString:urlString];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
@@ -197,7 +197,7 @@
             }
         }
     }
-    else {
+    else if(successBlock) {
         if (!_callbackBlocks) {
             _callbackBlocks = [NSMutableDictionary new];
         }
