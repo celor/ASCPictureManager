@@ -138,9 +138,10 @@
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             if (url) {
                 [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
-                NSData *imageData = [NSData dataWithContentsOfURL:url];
-                UIImage *img = [UIImage imageWithData:imageData];
-                img = [UIImage imageWithCGImage:img.CGImage scale:[UIScreen mainScreen].scale orientation:img.imageOrientation];
+                
+                NSData *imageData = [[NSData alloc] initWithContentsOfURL:url];
+                UIImage *img = [[UIImage alloc] initWithData:imageData scale:[UIScreen mainScreen].scale];
+                
                 
                 [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];
                 [_requestURLBlocks removeObject:urlString];
@@ -154,7 +155,6 @@
                             block();
                         }
                         else {
-                            
                             dispatch_async(dispatch_get_main_queue(), block);
                         }
                     }];
