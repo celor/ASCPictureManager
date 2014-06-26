@@ -96,7 +96,7 @@
 }
 
 + (ASCPictureManager *)sharedManagerForEntityName:(NSString *)entityName {
-
+    
 	return [[ASCPictureManagerStack sharedManager] pictureManagerForEntityName:entityName];
 }
 
@@ -104,19 +104,27 @@
 	if (!_managedObjectContext || !_entityName || !_urlKeyValue) {
 		return;
 	}
-
+    
 	_fetchedController = ({
-	                          NSFetchRequest *request = [[NSFetchRequest alloc] initWithEntityName:_entityName];
-	                          [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:_urlKeyValue ascending:NO]]];
-	                          NSFetchedResultsController *resultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:_managedObjectContext sectionNameKeyPath:nil cacheName:nil];
-	                          [resultController setDelegate:self];
-	                          [resultController performFetch:nil];
-	                          resultController;
-						  });
+        NSFetchRequest *request = [[NSFetchRequest alloc] initWithEntityName:_entityName];
+        [request setSortDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:_urlKeyValue ascending:NO]]];
+        NSFetchedResultsController *resultController = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:_managedObjectContext sectionNameKeyPath:nil cacheName:nil];
+        [resultController setDelegate:self];
+        [resultController performFetch:nil];
+        resultController;
+    });
+    
 	if (!_requestURLBlocks) {
 		_requestURLBlocks = [NSMutableArray new];
 	}
 	[_requestURLBlocks removeAllObjects];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        NSArray *array = [[_fetchedController fetchedObjects] valueForKeyPath:_urlKeyValue];
+        [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [self downloadImageWithURLString:obj];
+        }];
+        
+    });
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
@@ -133,35 +141,56 @@
 -(void)downloadImageWithURLString:(NSString *)urlString
 {
     if (urlString && ![_requestURLBlocks containsObject:urlString]) {
-        [_requestURLBlocks addObject:urlString];
-        NSURL *url = [NSURL URLWithString:urlString];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-            if (url) {
-                [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
-                
-                NSData *imageData = [[NSData alloc] initWithContentsOfURL:url];
-                UIImage *img = [[UIImage alloc] initWithData:imageData scale:[UIScreen mainScreen].scale];
-                
-                
-                [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];
-                [_requestURLBlocks removeObject:urlString];
-                NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
-                if (callbacks) {
-                    [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
-                        dispatch_block_t block = ^{
-                            imageBlock(img,urlString);
-                        };
-                        if ([NSThread isMainThread]) {
-                            block();
-                        }
-                        else {
-                            dispatch_async(dispatch_get_main_queue(), block);
-                        }
-                    }];
-                }
+        UIImage *image = nil;
+        if ((image = [[ASCImageCache sharedCache] cachedImageForURLString:urlString])!=nil) {
+            
+            NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
+            if (callbacks) {
+                [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
+                    dispatch_block_t block = ^{
+                        imageBlock(image,urlString);
+                    };
+                    if ([NSThread isMainThread]) {
+                        block();
+                    }
+                    else {
+                        dispatch_async(dispatch_get_main_queue(), block);
+                    }
+                }];
+                [_callbackBlocks removeObjectForKey:urlString];
             }
-            [_callbackBlocks removeObjectForKey:urlString];
-        });
+        }
+        else {
+            [_requestURLBlocks addObject:urlString];
+            NSURL *url = [NSURL URLWithString:urlString];
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                if (url) {
+                    [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
+                    
+                    NSData *imageData = [[NSData alloc] initWithContentsOfURL:url];
+                    UIImage *img = [[UIImage alloc] initWithData:imageData scale:[UIScreen mainScreen].scale];
+                    
+                    
+                    [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];
+                    [_requestURLBlocks removeObject:urlString];
+                    NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
+                    if (callbacks) {
+                        [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
+                            dispatch_block_t block = ^{
+                                imageBlock(img,urlString);
+                            };
+                            if ([NSThread isMainThread]) {
+                                block();
+                            }
+                            else {
+                                dispatch_async(dispatch_get_main_queue(), block);
+                            }
+                        }];
+                    }
+                }
+                [_callbackBlocks removeObjectForKey:urlString];
+            });
+        }
     }
 }
 
@@ -254,7 +283,7 @@
 	dispatch_once(&onceToken, ^{
 	    instance = [[self alloc] init];
 	});
-
+    
 	return instance;
 }
 
@@ -268,7 +297,7 @@
 			[[NSFileManager defaultManager] createDirectoryAtPath:pathFolder withIntermediateDirectories:NO attributes:nil error:NULL];
 		}
 		__weak typeof(self) weakSelf = self;
-
+        
 		[[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidReceiveMemoryWarningNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock: ^(NSNotification *__unused notification) {
 		    [weakSelf removeAllObjects];
 		}];
@@ -339,10 +368,10 @@ static inline NSString *ImageSavePathFromKey(NSString *key) {
 	}
 	if ([[NSFileManager defaultManager] fileExistsAtPath:ImageSavePathFromKey(key)]) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^()
-		{
-		    success([self savedObjectForKey:key]);
-		});
-
+                       {
+                           success([self savedObjectForKey:key]);
+                       });
+        
 		return YES;
 	}
 	return NO;
@@ -350,11 +379,11 @@ static inline NSString *ImageSavePathFromKey(NSString *key) {
 
 - (void)setObject:(id)obj forKey:(id)key {
 	dispatch_async(dispatch_queue_create("SaveImageQueue", DISPATCH_QUEUE_CONCURRENT), ^()
-	{
-	    if (![[NSFileManager defaultManager] fileExistsAtPath:ImageSavePathFromKey(key)] && [obj isKindOfClass:[UIImage class]]) {
-	        [UIImagePNGRepresentation(obj) writeToFile:ImageSavePathFromKey(key) atomically:YES];
-		}
-	});
+                   {
+                       if (![[NSFileManager defaultManager] fileExistsAtPath:ImageSavePathFromKey(key)] && [obj isKindOfClass:[UIImage class]]) {
+                           [UIImagePNGRepresentation(obj) writeToFile:ImageSavePathFromKey(key) atomically:YES];
+                       }
+                   });
 	[super setObject:obj forKey:key];
 }
 
