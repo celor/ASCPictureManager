@@ -149,7 +149,7 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
 -(void)downloadImageWithURLString:(NSString *)urlString
 {
     @synchronized(self){
-        if (urlString && ![_requestURLBlocks containsObject:urlString]) {
+        if (urlString && !_requestOperations[urlString]) {
             UIImage *image = nil;
             if ((image = [[ASCImageCache sharedCache] cachedImageForURLString:urlString])!=nil) {
                 
