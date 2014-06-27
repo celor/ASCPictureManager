@@ -24,7 +24,10 @@
 //
 
 #import "ASCPictureManager.h"
+#define REQUEST_URL_ARCHIVER_PATH [[NSString alloc] initWithFormat:@"%@/_ascRequestUrls",[NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject]]
 
+NSString *ASCPictureManagerNeedIncrementNetworkActivityCounter = @"ASCPictureManagerNeedIncrementNetworkActivityCounter";
+NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureManagerNeedDecrementNetworkActivityCounter";
 @interface ASCImageCache : NSCache
 + (ASCImageCache *)sharedCache;
 - (UIImage *)cachedImageForURLString:(NSString *)url;
@@ -118,13 +121,15 @@
 		_requestURLBlocks = [NSMutableArray new];
 	}
 	[_requestURLBlocks removeAllObjects];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        NSArray *array = [[_fetchedController fetchedObjects] valueForKeyPath:_urlKeyValue];
-        [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            [self downloadImageWithURLString:obj];
-        }];
-        
-    });
+    NSArray *tempRequestBlock = [NSKeyedUnarchiver unarchiveObjectWithFile:REQUEST_URL_ARCHIVER_PATH];
+    [tempRequestBlock enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [self downloadImageWithURLString:obj];
+    }];
+}
+
+-(void)dealloc
+{
+    [NSKeyedArchiver archiveRootObject:_requestURLBlocks toFile:REQUEST_URL_ARCHIVER_PATH];
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
@@ -166,9 +171,10 @@
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
                 if (url) {
                     [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
-                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedIncrementNetworkActivityCounter object:self];
                     NSData *imageData = [[NSData alloc] initWithContentsOfURL:url];
                     UIImage *img = [[UIImage alloc] initWithData:imageData scale:[UIScreen mainScreen].scale];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedDecrementNetworkActivityCounter object:self];
                     
                     
                     [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];

@@ -25,6 +25,10 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+
+extern NSString *ASCPictureManagerNeedIncrementNetworkActivityCounter;
+extern NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter;
+
 typedef void (^ASCImageSuccessBlock)(UIImage *image, NSString *urlString);
 @interface ASCPictureManager : NSObject
 
