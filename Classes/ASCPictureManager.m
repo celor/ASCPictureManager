@@ -145,57 +145,59 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
 
 -(void)downloadImageWithURLString:(NSString *)urlString
 {
-    if (urlString && ![_requestURLBlocks containsObject:urlString]) {
-        UIImage *image = nil;
-        if ((image = [[ASCImageCache sharedCache] cachedImageForURLString:urlString])!=nil) {
-            
-            NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
-            if (callbacks) {
-                [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
-                    dispatch_block_t block = ^{
-                        imageBlock(image,urlString);
-                    };
-                    if ([NSThread isMainThread]) {
-                        block();
-                    }
-                    else {
-                        dispatch_async(dispatch_get_main_queue(), block);
-                    }
-                }];
-                [_callbackBlocks removeObjectForKey:urlString];
-            }
-        }
-        else {
-            [_requestURLBlocks addObject:urlString];
-            NSURL *url = [NSURL URLWithString:urlString];
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-                if (url) {
-                    [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedIncrementNetworkActivityCounter object:self];
-                    NSData *imageData = [[NSData alloc] initWithContentsOfURL:url];
-                    UIImage *img = [[UIImage alloc] initWithData:imageData scale:[UIScreen mainScreen].scale];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedDecrementNetworkActivityCounter object:self];
-                    
-                    
-                    [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];
-                    [_requestURLBlocks removeObject:urlString];
-                    NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
-                    if (callbacks) {
-                        [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
-                            dispatch_block_t block = ^{
-                                imageBlock(img,urlString);
-                            };
-                            if ([NSThread isMainThread]) {
-                                block();
-                            }
-                            else {
-                                dispatch_async(dispatch_get_main_queue(), block);
-                            }
-                        }];
-                    }
+    @synchronized(self){
+        if (urlString && ![_requestURLBlocks containsObject:urlString]) {
+            UIImage *image = nil;
+            if ((image = [[ASCImageCache sharedCache] cachedImageForURLString:urlString])!=nil) {
+                
+                NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
+                if (callbacks) {
+                    [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
+                        dispatch_block_t block = ^{
+                            imageBlock(image,urlString);
+                        };
+                        if ([NSThread isMainThread]) {
+                            block();
+                        }
+                        else {
+                            dispatch_async(dispatch_get_main_queue(), block);
+                        }
+                    }];
+                    [_callbackBlocks removeObjectForKey:urlString];
                 }
-                [_callbackBlocks removeObjectForKey:urlString];
-            });
+            }
+            else {
+                [_requestURLBlocks addObject:urlString];
+                NSURL *url = [NSURL URLWithString:urlString];
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                    if (url) {
+                        [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedIncrementNetworkActivityCounter object:self];
+                        NSData *imageData = [[NSData alloc] initWithContentsOfURL:url];
+                        UIImage *img = [[UIImage alloc] initWithData:imageData scale:[UIScreen mainScreen].scale];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedDecrementNetworkActivityCounter object:self];
+                        
+                        
+                        [[ASCImageCache sharedCache] cacheImage:img forURLString:urlString];
+                        [_requestURLBlocks removeObject:urlString];
+                        NSMutableArray *callbacks = [_callbackBlocks objectForKey:urlString];
+                        if (callbacks) {
+                            [callbacks enumerateObjectsUsingBlock: ^(ASCImageSuccessBlock imageBlock, NSUInteger idx, BOOL *stop) {
+                                dispatch_block_t block = ^{
+                                    imageBlock(img,urlString);
+                                };
+                                if ([NSThread isMainThread]) {
+                                    block();
+                                }
+                                else {
+                                    dispatch_async(dispatch_get_main_queue(), block);
+                                }
+                            }];
+                        }
+                    }
+                    [_callbackBlocks removeObjectForKey:urlString];
+                });
+            }
         }
     }
 }
