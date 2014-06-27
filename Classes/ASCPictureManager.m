@@ -39,7 +39,9 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
 {
 	NSFetchedResultsController *_fetchedController;
 	NSMutableDictionary *_callbackBlocks;
+	NSMutableDictionary *_requestOperations;
 	NSMutableArray *_requestURLBlocks;
+    NSOperationQueue *_imageOperationQueue;
 }
 
 @end
@@ -116,7 +118,8 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
         [resultController performFetch:nil];
         resultController;
     });
-    
+    _imageOperationQueue = [NSOperationQueue new];
+    [_imageOperationQueue setName:@"ASCPictureDownloadOperation"];
 	if (!_requestURLBlocks) {
 		_requestURLBlocks = [NSMutableArray new];
 	}
@@ -169,7 +172,7 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
             else {
                 [_requestURLBlocks addObject:urlString];
                 NSURL *url = [NSURL URLWithString:urlString];
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
                     if (url) {
                         [[NSThread currentThread] setName:[NSString stringWithFormat:@"ASCPictureManagerDownload.%@", url.host]];
                         [[NSNotificationCenter defaultCenter] postNotificationName:ASCPictureManagerNeedIncrementNetworkActivityCounter object:self];
@@ -196,8 +199,20 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
                         }
                     }
                     [_callbackBlocks removeObjectForKey:urlString];
-                });
+                    [_requestOperations removeObjectForKey:urlString];
+                }];
+                if (!_requestOperations) {
+                    _requestOperations = [NSMutableDictionary new];
+                }
+                [operation setQueuePriority:NSOperationQueuePriorityVeryLow];
+                [_requestOperations setObject:operation forKey:urlString];
+                [_imageOperationQueue addOperation:operation];
             }
+        }
+        else if (urlString)
+        {
+            NSOperation *operation = _requestOperations[urlString];
+            [operation setQueuePriority:NSOperationQueuePriorityVeryHigh];
         }
     }
 }
