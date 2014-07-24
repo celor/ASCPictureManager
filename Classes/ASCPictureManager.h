@@ -34,6 +34,7 @@ typedef void (^ASCImageSuccessBlock)(UIImage *image, NSString *urlString);
 
 @property (nonatomic,strong) NSString *entityName;
 @property (nonatomic,strong) NSString *urlKeyValue;
+@property (nonatomic,assign) BOOL autodownload;
 @property (nonatomic,strong) NSManagedObjectContext *managedObjectContext;
 
 + (instancetype)sharedManager;

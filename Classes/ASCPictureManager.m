@@ -99,7 +99,14 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
     
 	return instance;
 }
-
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _autodownload = YES;
+    }
+    return self;
+}
 + (ASCPictureManager *)sharedManagerForEntityName:(NSString *)entityName {
     
 	return [[ASCPictureManagerStack sharedManager] pictureManagerForEntityName:entityName];
@@ -136,7 +143,7 @@ NSString *ASCPictureManagerNeedDecrementNetworkActivityCounter = @"ASCPictureMan
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath {
-	if (_entityName
+	if (_autodownload && _entityName
 	    && _urlKeyValue
 	    && [anObject isKindOfClass:[NSManagedObject class]]
 	    && [[anObject entity].name isEqualToString:_entityName]
