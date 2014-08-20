@@ -37,6 +37,10 @@
 
 -(void)setPicture:(NSManagedObject *)picture
 {
+    [self setPicture:picture withPlaceholder:nil];
+}
+-(void)setPicture:(NSManagedObject *)picture withPlaceholder:(UIImage *)placeholder
+{
     if (picture
         && [[ASCPictureManager sharedManager] entityName]
 	    && [[ASCPictureManager sharedManager] urlKeyValue]
@@ -44,9 +48,12 @@
 	    && [picture.entity.attributesByName objectForKey:[[ASCPictureManager sharedManager] urlKeyValue]])
     {
         [self setImageUrl:[picture valueForKey:[[ASCPictureManager sharedManager] urlKeyValue]]];
+        if (placeholder) {
+            [self setImage:placeholder];
+        }
         __weak typeof(self) weakSelf = self;
         [picture observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
-            if ([[weakSelf imageUrl] isEqualToString:urlString]) {
+            if ([[weakSelf imageUrl] isEqualToString:urlString] && (image || !placeholder)) {
                 [weakSelf setImage:image];
             }
         }];
@@ -55,12 +62,19 @@
 
 -(void)setPictureWithUrl:(NSString *)pictureUrl
 {
+    [self setPictureWithUrl:pictureUrl withPlaceholder:nil];
+}
+-(void)setPictureWithUrl:(NSString *)pictureUrl withPlaceholder:(UIImage *)placeholder
+{
     if (pictureUrl) {
         
         [self setImageUrl:pictureUrl];
+        if (placeholder) {
+            [self setImage:placeholder];
+        }
         __weak typeof(self) weakSelf = self;
         [pictureUrl observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
-            if ([[weakSelf imageUrl] isEqualToString:urlString]) {
+            if ([[weakSelf imageUrl] isEqualToString:urlString] && (image || !placeholder)) {
                 [weakSelf setImage:image];
             }
         }];

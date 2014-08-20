@@ -28,6 +28,8 @@
 
 @interface UIImageView (ASCPictureManager)
 -(void)setPicture:(NSManagedObject *)picture;
+-(void)setPicture:(NSManagedObject *)picture withPlaceholder:(UIImage *)placeholder;
 -(void)setPictureWithUrl:(NSString *)pictureUrl;
+-(void)setPictureWithUrl:(NSString *)pictureUrl withPlaceholder:(UIImage *)placeholder;
 -(void)flushPicture;
 @end
