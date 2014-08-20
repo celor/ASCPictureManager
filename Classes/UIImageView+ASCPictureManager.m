@@ -53,7 +53,7 @@
         }
         __weak typeof(self) weakSelf = self;
         [picture observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
-            if ([[weakSelf imageUrl] isEqualToString:urlString] && (image || !placeholder)) {
+            if ([[weakSelf imageUrl] isEqualToString:urlString] && image) {
                 [weakSelf setImage:image];
             }
         }];
@@ -74,7 +74,7 @@
         }
         __weak typeof(self) weakSelf = self;
         [pictureUrl observeDownloadWithBlock:^(UIImage *image, NSString *urlString) {
-            if ([[weakSelf imageUrl] isEqualToString:urlString] && (image || !placeholder)) {
+            if ([[weakSelf imageUrl] isEqualToString:urlString] && image) {
                 [weakSelf setImage:image];
             }
         }];
